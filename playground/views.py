@@ -15,7 +15,7 @@ def health_check(request):
     })
 
 @csrf_exempt
-def todos(request):
+def todos(request, id=0):
     if request.method == "GET":
         todos = Todos.objects.all()
         todos_serializer = TodosSerializer(todos, many=True)
@@ -23,7 +23,7 @@ def todos(request):
     
     elif request.method == "POST":
         todos_data = JSONParser().parse(request)
-        print(todos_data)
+        # print(todos_data)
         todos_serializer = TodosSerializer(data=todos_data)
         if todos_serializer.is_valid():
             todos_serializer.save()
@@ -33,3 +33,22 @@ def todos(request):
         return JsonResponse({
                 "status": "Failed to add !",
             })
+    elif request.method == "PUT":
+        todos_data = JSONParser().parse(request)
+        todo = Todos.objects.get(name=todos_data['name'])
+        todos_serializer = TodosSerializer(todo, data=todos_data)
+        if todos_serializer.is_valid():
+            todos_serializer.save()
+            return JsonResponse({
+                "status": "Todo updated !",
+            })
+        return JsonResponse({
+                "status": "Failed to update !",
+            })
+    elif request.method == "DELETE":
+        todo = Todos.objects.get(id=id)
+        todo.delete()
+        return JsonResponse({
+                "status": "Todo deleted !",
+            })
+
